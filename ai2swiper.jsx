@@ -1,1 +1,1 @@
-﻿// ai2swiper.js#include ".scripts/utils.jsx"#include ".scripts/progress-bar.jsx"#include ".scripts/constants.jsx"
+﻿// ai2swiper.js#include ".scripts/polyfills.jsx"#include ".scripts/underscore.jsx"#include ".scripts/utils.jsx"#include ".scripts/progress-bar.jsx"#include ".scripts/constants.jsx"
