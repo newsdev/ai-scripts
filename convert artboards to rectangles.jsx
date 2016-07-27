@@ -56,20 +56,18 @@ if (!ignore.length) {
 
 // draw rect for each
 var toDelete = [];
-for(i = 0; i < convert.length; i++){  
-  if (convert[i].name != "-- ignore me --") {
-    var top=convert[i].artboardRect[1];  
-    var left=convert[i].artboardRect[0];
-    var width=convert[i].artboardRect[2]-convert[i].artboardRect[0]; 
-    var height=convert[i].artboardRect[1]-convert[i].artboardRect[3];
+_.each(convert, function(ab) {
+    var top = ab.artboardRect[1];  
+    var left = ab.artboardRect[0];
+    var width = ab.artboardRect[2] - ab.artboardRect[0]; 
+    var height = ab.artboardRect[1] - ab.artboardRect[3];
     var rect = doc.pathItems.rectangle (top, left, width, height);
     rect.filled = false;
     rect.strokeColor = getColor(0x8a497e);
     rect.strokeWidth = 30;
-
-    toDelete.push(convert[i].name);
-  }
-}
+    
+    toDelete.push(ab.name);
+});
 
 // delete all the artboards
 for (i = 0; i < toDelete.length; i++) {
