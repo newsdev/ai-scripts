@@ -2,10 +2,7 @@
 #include ".scripts/underscore.jsx"
 #include ".scripts/utils.jsx"
 
-// put code in here
-var doc = app.activeDocument;
-var artboards = doc.artboards;
-
+var artboards = app.activeDocument.artboards;
 
 var ignore = [],
     convert = [];
@@ -40,4 +37,3 @@ _.each(convert, function(ab) {
 _.each(toDelete, function(name) {
     artboards.getByName(name).remove();
 });
-
