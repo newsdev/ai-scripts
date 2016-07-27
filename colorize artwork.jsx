@@ -2,15 +2,17 @@
 #include ".scripts/underscore.jsx"
 #include ".scripts/utils.jsx"
 
-// select all elements with matching name id
-
-// var dataFile = File.openDialog('Select JSON file', 'text/json', false);
-var json = readFile(app.activeDocument.path+'/colorizer.json').replace(new RegExp("\n[ \t]+", "gm"), ' ');
+// first we load the data file
+var dataFile = app.activeDocument.path+'/colorizer.json';
+if (!fileExists(dataFile)) {
+    dataFile = File.openDialog('Select JSON data file', 'text/json', false);
+}
+var jsonStr = readFile(dataFile).replace(new RegExp("\n[ \t]+", "gm"), ' ');
 
 // sometimes illustrator strips of the last character
-if (json.charAt(json.length-1) != ']') json = json + ']';
+if (jsonStr.charAt(jsonStr.length-1) != ']') jsonStr = jsonStr + ']';
 
-eval('var files = '+json+';');
+eval('var files = '+jsonStr+';');
 
 var file_options = [],
     file_index = {};
@@ -19,7 +21,6 @@ for (var i=0; i<files.length; i++) {
     file_options.push(files[i].file);
     file_index[files[i].file] = i;
 }
-
 
 var Pallette = new Window ("dialog", "Select the data file");
 // Pallette.add ("statictext", undefined, "Fill Opening in Inches:");
@@ -142,7 +143,6 @@ btnCreate.onClick = function () {
 };
 
 Pallette.show();
-
 
 function readFile(filename) {
     var f = new File(filename);
