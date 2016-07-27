@@ -38,37 +38,36 @@ var newRect = function(x, y, width, height) {
     return rect;
 };
 
-// make a fake artboard
-var abnames = [];
-for (var i = 0; i < artboards.length; i++) {
-  abnames.push(artboards[i].name);
-}
 
-if (abnames.indexOf("-- ignore me --") == -1) {
-  var top = 0;
-  var left = 0;
-  var width = 10;
-  var height = 10;
+var ignore = [],
+  convert = [];
 
+_.each(artboards, function(ab) {
+  if (ab.name.charAt(0) == '-') ignore.push(ab);
+  else convert.push(ab);
+})
+
+if (!ignore.length) {
+  // make a fake artboard
   ab = artboards.add(artboards[0].artboardRect);
   ab.name = "-- ignore me --";
-  ab.artboardRect = newRect(-100, -100, 10, 10);
+  ab.artboardRect = newRect(-600, -600, 10, 10);
 }
 
 // draw rect for each
 var toDelete = [];
-for(i = 0; i < artboards.length; i++){  
-  if (artboards[i].name != "-- ignore me --") {
-    var top=artboards[i].artboardRect[1];  
-    var left=artboards[i].artboardRect[0];
-    var width=artboards[i].artboardRect[2]-artboards[i].artboardRect[0]; 
-    var height=artboards[i].artboardRect[1]-artboards[i].artboardRect[3];
+for(i = 0; i < convert.length; i++){  
+  if (convert[i].name != "-- ignore me --") {
+    var top=convert[i].artboardRect[1];  
+    var left=convert[i].artboardRect[0];
+    var width=convert[i].artboardRect[2]-convert[i].artboardRect[0]; 
+    var height=convert[i].artboardRect[1]-convert[i].artboardRect[3];
     var rect = doc.pathItems.rectangle (top, left, width, height);
     rect.filled = false;
     rect.strokeColor = getColor(0x8a497e);
     rect.strokeWidth = 30;
 
-    toDelete.push(artboards[i].name);
+    toDelete.push(convert[i].name);
   }
 }
 
