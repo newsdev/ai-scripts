@@ -2,6 +2,7 @@
 #include ".scripts/underscore.jsx"
 #include ".scripts/utils.jsx"
 
+var doc = app.activeDocument;
 var artboards = app.activeDocument.artboards;
 
 var ignore = [],

@@ -144,15 +144,5 @@ btnCreate.onClick = function () {
 
 Pallette.show();
 
-function readFile(filename) {
-    var f = new File(filename);
-    f.open('r');
-    var data = '';
-    while(!f.eof) {
-        data = data + f.readln() + '\n';
-    }
-    f.close();
-    return data;
-}
 
 
