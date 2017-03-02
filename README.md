@@ -2,7 +2,7 @@
 
 ### colorize artwork
 
-reads in a JSON file and re-colors paths with matching ids. 
+reads in a JSON file and re-colors paths with matching ids. check out [tutorial](http://vis4.net/blog/posts/re-coloring-illustrator-graphics-based-on-data-files/)
 
 ### convert artboards to rectangle
 
