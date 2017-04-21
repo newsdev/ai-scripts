@@ -118,7 +118,6 @@ btnCreate.onClick = function () {
             } else {
                 applyStyle(result[i], d);
             }
-            if (i === 0)
         }
 
         function applyStyle(thing, d) {
