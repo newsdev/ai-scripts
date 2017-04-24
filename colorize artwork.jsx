@@ -10,9 +10,6 @@ var jsonStr = readFile(dataFile)
     .replace(new RegExp("\n[ \t]+", "gm"), ' ')
     .replace(new RegExp("\s*$"),"");
 
-// // sometimes illustrator strips of the last character
-// if (jsonStr.charAt(jsonStr.length-1) != ']') jsonStr = jsonStr + ']';
-
 eval('var files = '+jsonStr+';');
 
 var file_options = [],
@@ -24,7 +21,6 @@ for (var i=0; i<files.length; i++) {
 }
 
 var Pallette = new Window ("dialog", "Select the dataset");
-// Pallette.add ("statictext", undefined, "Fill Opening in Inches:");
 Pallette.orientation = "column";
 var myDropdown =  Pallette.add ("dropdownlist", undefined, file_options);
 myDropdown.selection = myDropdown.items[0];
@@ -32,117 +28,81 @@ var myButtonGroup =  Pallette.add ("group");
 myButtonGroup.orientation = "row";
 var btnCreate = myButtonGroup.add ("button", undefined, "OK");
 var btnCancel = myButtonGroup.add ("button", undefined, "Cancel");
-var doc = app.activeDocument;
-
-btnCreate.onClick = function () {
-    var result = [];
+btnCreate.onClick = function() {
     var file = String(myDropdown.selection);
     var data = files[file_index[file]];
-    var layerNames = [];
-
-    checkLayers(doc.layers, data.data);
-    applyStyles(result, data.data);
-
+    colorizeItems(app.activeDocument.layers, getColorFunction(data.data));
     Pallette.close();
     return false;
-
-    function checkLayers(layers, data) {
-        var all_groups, group, layer, n;
-        for (var lid=0; lid<layers.length; lid++) {
-            layer = layers[lid];
-            if (!layer.locked) { // only deal with visible layers
-                collectMatchingItems(result, layer.pathItems, data);
-                collectMatchingItems(result, layer.symbolItems, data);
-                collectMatchingItems(result, layer.compoundPathItems, data);
-                all_groups = findGroups(layer.groupItems);
-                for (var g=0; g<all_groups.length; g++) {
-                    group = all_groups[g];
-                    if (!group.locked) {
-                        if (data[group.name]) {
-                            // give children same name as group
-                            applyName(group.pathItems, group.name);
-                            applyName(group.symbolItems, group.name);
-                            applyName(group.compoundPathItems, group.name);
-                        }
-                        collectMatchingItems(result, group.pathItems, data);
-                        collectMatchingItems(result, group.symbolItems, data);
-                        collectMatchingItems(result, group.compoundPathItems, data);
-                    }
-                }
-                if (layer.layers.length > 0) checkLayers(layer.layers, data);
-            }
-        }
-    }
-
-    function applyName(items, name) {
-        for (var i=0, n=items.length; i<n; i++) {
-            items[i].name = name;
-        }
-    }
-
-    function findGroups(groupItems, collection) {
-        if (!collection) {
-            collection = [];
-        }
-        for (var g=0; g<groupItems.length; g++) {
-            // recursively check sub-groups
-            if (!groupItems[g].locked) {
-                collection.push(groupItems[g]);
-                if (groupItems[g].groupItems.length > 0) {
-                    findGroups(groupItems[g].groupItems, collection);
-                }
-            }
-        }
-        return collection;
-    }
-
-    function collectMatchingItems(collection, items, data) {
-        var item;
-        for (var i=0, n=items.length; i<n; i++) {
-            item = items[i];
-            if (item.name && data[item.name]) collection.push(item);
-        }
-    }
-
-    function applyStyles(items, data) {
-        var memos = {};
-        var item, d;
-        for (var i=0, n=items.length; i<n; i++) {
-            item = items[i];
-            d = data[item.name];
-            if (!d || !item) continue; // shouldn't happen
-            if (item.typename == 'CompoundPathItem') {
-                for (var pi=0; pi<item.pathItems.length; pi++) {
-                    applyStyle(item.pathItems[pi], d);
-                }
-            } else {
-                applyStyle(result[i], d);
-            }
-        }
-
-        function applyStyle(thing, d) {
-            if (d.fill) {
-                thing.filled = true;
-                thing.fillColor = convertColor(d.fill);
-            } else if (d.fill === false) {
-                thing.filled = false;
-            }
-            if (d.stroke === false) {
-                thing.stroked = false;
-            } else if (d.stroke) {
-                thing.stroked = true;
-                thing.strokeColor = convertColor(d.stroke);
-            }
-        }
-
-        function convertColor(value) {
-            var rgb = memos[value];
-            if (!rgb) {
-                rgb = memos[value] = getColor(value);
-            }
-            return rgb;
-        }
-    }
 };
-
 Pallette.show();
+
+function colorizeItems(collection, styler) {
+    for (var i=0, n=collection.length; i<n; i++) {
+        colorizeItem(collection[i], styler);
+    }
+}
+
+function itemIsEditable(item) {
+    if (item.locked) return false;
+    if (item.typename == 'Layer') {
+        return item.visible;
+    } else {
+        return !item.hidden;
+    }
+}
+
+function colorizeItem(item, styler) {
+    var type = item.typename;
+    if (!itemIsEditable(item)) return false;
+    if (type == 'Layer' || type == 'GroupItem') {
+        if (type == 'Layer') {
+            colorizeItems(item.layers, styler);
+        }
+        colorizeItems(item.pathItems, styler);
+        colorizeItems(item.symbolItems, styler);
+        colorizeItems(item.compoundPathItems, styler);
+        colorizeItems(item.groupItems, styler);
+    } else {
+        styler(item, item.name || item.parent.name);
+    }
+}
+
+function getColorFunction(data) {
+    var memos = {};
+
+    function applyStyle(thing, d) {
+        if (d.fill) {
+            thing.filled = true;
+            thing.fillColor = convertColor(d.fill);
+        } else if (d.fill === false) {
+            thing.filled = false;
+        }
+        if (d.stroke === false) {
+            thing.stroked = false;
+        } else if (d.stroke) {
+            thing.stroked = true;
+            thing.strokeColor = convertColor(d.stroke);
+        }
+    }
+
+    function convertColor(value) {
+        var rgb = memos[value];
+        if (!rgb) {
+            rgb = memos[value] = getColor(value);
+        }
+        return rgb;
+    }
+
+    return function(item, key) {
+        var d = data[key];
+        if (!d) return;
+        if (item.typename == 'CompoundPathItem') {
+            for (var pi=0; pi<item.pathItems.length; pi++) {
+                applyStyle(item.pathItems[pi], d);
+            }
+        } else {
+            applyStyle(item, d);
+        }
+    };
+}
